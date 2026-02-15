@@ -19,7 +19,7 @@ spec:
 {{- include "element-io.ess-library.ingress-service.spec" (dict "root" $ "context" .ingress) | nindent 2 }}
   ports:
   - name: haproxy-wkd
-    port: 8010
+    port: {{ include "element-io.well-known.ports" (dict "portName" "haproxy-wkd") }}
     targetPort: haproxy-wkd
   selector:
     app.kubernetes.io/instance: "{{ $.Release.Name }}-haproxy"

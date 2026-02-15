@@ -17,7 +17,7 @@ metadata:
 spec:
 {{- include "element-io.ess-library.ingress-service.spec" (dict "root" $ "context" .ingress) | nindent 2 }}
   ports:
-  - port: 8080
+  - port: {{ include "element-io.element-admin.ports" (dict "portName" "http") }}
     targetPort: http
     name: http
   selector:

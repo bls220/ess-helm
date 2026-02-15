@@ -79,6 +79,9 @@
     "ingress": {
       "$ref": "file://common/ingress_global.json"
     },
+    "gateway": {
+      "$ref": "file://common/gateway_global.json"
+    },
     "tolerations": {
       "$ref": "file://common/tolerations.json"
     },

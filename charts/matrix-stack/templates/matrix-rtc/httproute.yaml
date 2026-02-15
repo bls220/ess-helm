@@ -1,0 +1,38 @@
+{{- /*
+Copyright 2025 Element Creations Ltd
+
+SPDX-License-Identifier: AGPL-3.0-only
+*/ -}}
+{{- with .Values.matrixRTC -}}
+{{- if and .enabled .gateway.enabled .gateway.host -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+{{- include "element-io.ess-library.gateway.annotations" (dict "root" $ "context" (dict "gateway" .gateway)) | nindent 2 }}
+  labels:
+    {{- include "element-io.matrix-rtc-ingress.labels" (dict "root" $ "context" .) | nindent 4 }}
+  name: {{ $.Release.Name }}-matrix-rtc
+  namespace: {{ $.Release.Namespace }}
+spec:
+  hostnames:
+  - {{ (tpl .gateway.host $) | quote }}
+{{- include "element-io.ess-library.gateway.parentRefs" (dict "root" $ "context" .gateway.parentRefs) | nindent 2 }}
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /sfu/get
+    backendRefs:
+    - name: "{{ $.Release.Name }}-matrix-rtc-authorisation-service"
+      port: {{ include "element-io.matrix-rtc-authorisation-service.ports" (dict "portName" "http") }}
+{{ if .sfu.enabled }}
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: "{{ $.Release.Name }}-matrix-rtc-sfu"
+      port: {{ include "element-io.matrix-rtc-sfu.ports" (dict "portName" "http") }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -9,6 +9,9 @@
     "ingress": {
       "$ref": "file://common/ingress_without_host.json"
     },
+    "gateway": {
+      "$ref": "file://common/gateway_without_host.json"
+    },
     "labels": {
       "$ref": "file://common/labels.json"
     },

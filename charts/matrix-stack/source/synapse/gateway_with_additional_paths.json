@@ -16,20 +16,40 @@
     "host": {
       "type": "string"
     },
-    "className": {
-      "type": "string"
-    },
-    "tlsEnabled": {
-      "type": "boolean"
-    },
-    "tlsSecret": {
-      "type": "string"
-    },
-    "controllerType": {
-      "type": "string",
-      "enum": [
-        "ingress-nginx"
-      ]
+    "parentRefs": {
+      "type": "array",
+      "description": "Kubernetes Gateway API ParentReference specification (https://gateway-api.sigs.k8s.io/reference/spec/#parentreference). Defines the Gateway resource(s) that this HTTPRoute should attach to. If not set, the global gateway.parentRefs will be used.",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the Gateway resource (required)"
+          },
+          "namespace": {
+            "type": "string",
+            "description": "Namespace of the Gateway resource (optional)"
+          },
+          "group": {
+            "type": "string",
+            "description": "Group of the Gateway API resource (default: gateway.networking.k8s.io)"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Kind of the Gateway API resource (default: Gateway)"
+          },
+          "sectionName": {
+            "type": "string",
+            "description": "Name of the Listener on the Gateway that this route would attach to (optional)"
+          },
+          "port": {
+            "type": "integer",
+            "description": "Port number of the Listener on the Gateway that this route would attach to (optional)"
+          }
+        },
+        "additionalProperties": false
+      }
     },
     "service": {
       "$ref": "file://common/service.json"

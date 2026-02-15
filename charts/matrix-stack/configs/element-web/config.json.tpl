@@ -15,7 +15,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $_ := set $mHomeserver "server_name" (tpl $root.Values.serverName $root) }}
 {{- end }}
 {{- if $root.Values.synapse.enabled }}
-{{- $_ := set $mHomeserver "base_url" (printf "https://%s" (tpl $root.Values.synapse.ingress.host $root)) -}}
+{{- $synapseHost := "" -}}
+{{- if and $root.Values.synapse.gateway.enabled $root.Values.synapse.gateway.host -}}
+{{- $synapseHost = (tpl $root.Values.synapse.gateway.host $root) -}}
+{{- else if and $root.Values.synapse.ingress.enabled $root.Values.synapse.ingress.host -}}
+{{- $synapseHost = (tpl $root.Values.synapse.ingress.host $root) -}}
+{{- end -}}
+{{- $_ := set $mHomeserver "base_url" (printf "https://%s" $synapseHost) -}}
 {{- end }}
 {{- if $root.Values.matrixRTC.enabled }}
 {{- $_ := set $settingDefaults "feature_group_calls" true -}}

@@ -12,6 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 - [Using a dedicated PostgreSQL database](#using-a-dedicated-postgresql-database)
 - [Configuring the storage path when using k3s](#configuring-the-storage-path-when-using-k3s)
 - [Monitoring](#monitoring)
+- [Gateway API](#gateway-api)
 - [Components Configuration](#configuration)
    - [Configuring Element Web](#configuring-element-web)
    - [Configuring Hookshot](#configuring-hookshot)
@@ -80,6 +81,93 @@ The above values correspond to the Traefik installation managed by K3s. If you a
 The chart provides `ServiceMonitor` automatically to monitor the metrics exposed by ESS Community.
 
 If your cluster has [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator) or [Victoria Metrics Operator](https://docs.victoriametrics.com/operator/) installed, the metrics will automatically be scraped.
+
+## Gateway API
+
+This chart supports the Kubernetes Gateway API in addition to the traditional Ingress API. The Gateway API provides a more powerful and flexible model for managing external access to Kubernetes services.
+
+### Requirements
+
+- Kubernetes 1.29+ (for stable Gateway API v1 support)
+- A [GatewayClass](https://gateway-api.sigs.k8s.io/concepts/api-overview/#gatewayclass) deployed in your cluster (e.g., from NGINX Gateway, Envoy Gateway, or another Gateway API controller)
+
+### Enabling Gateway API
+
+To use Gateway API instead of (or in addition to) Ingress, you must first ensure a Gateway exists in your cluster for the chart to bind to. Consult your Gateway API controller's documentation for instructions on creating a GatewayClass and Gateway.
+
+Once a Gateway is available, you can enable HTTPRoute resources for individual components by setting the `gateway.className` and component-specific `gateway.host` values:
+
+```yaml
+# Global Gateway API configuration
+gateway:
+  className: my-gateway-class  # Name of the GatewayClass your Gateway uses
+
+# Enable Gateway API for individual components
+synapse:
+  gateway:
+    host: synapse.example.com
+
+elementWeb:
+  gateway:
+    host: element.example.com
+```
+
+### Gateway API with TLS
+
+By default, the chart assumes TLS termination is handled by the Gateway. You can specify TLS certificates for HTTPRoute resources:
+
+```yaml
+synapse:
+  gateway:
+    host: synapse.example.com
+    tlsSecret: my-synapse-cert  # Reference to a Secret containing the TLS certificate and key
+
+elementWeb:
+  gateway:
+    host: element.example.com
+    tlsSecret: my-element-cert
+```
+
+The referenced Secret must exist in the same namespace as the Helm release and contain `tls.crt` and `tls.key` keys.
+
+### Coexisting with Ingress
+
+You can use both Ingress and Gateway API simultaneously. Components can have both `ingress.host` and `gateway.host` configured:
+
+```yaml
+synapse:
+  ingress:
+    host: synapse-ingress.example.com  # Uses Ingress
+  gateway:
+    host: synapse-gateway.example.com  # Uses Gateway API
+
+elementWeb:
+  ingress:
+    host: element-ingress.example.com
+  gateway:
+    host: element-gateway.example.com
+```
+
+### Gateway API Annotations
+
+You can add Gateway API-specific annotations to HTTPRoute resources using the same mechanism as Ingress:
+
+```yaml
+# Global Gateway annotations
+gateway:
+  annotations:
+    my-annotation: my-value
+
+# Component-specific Gateway annotations
+synapse:
+  gateway:
+    annotations:
+      component-specific: value
+```
+
+### More Information
+
+For more details on Kubernetes Gateway API, see the [official Gateway API documentation](https://gateway-api.sigs.k8s.io/).
 
 ## Configuration
 

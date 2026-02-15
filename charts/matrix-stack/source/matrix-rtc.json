@@ -68,6 +68,9 @@
     "ingress": {
       "$ref": "file://common/ingress.json"
     },
+    "gateway": {
+      "$ref": "file://common/gateway.json"
+    },
     "labels": {
       "$ref": "file://common/labels.json"
     },

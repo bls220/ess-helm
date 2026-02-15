@@ -9,8 +9,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $root := .root -}}
 {{- with required "element-io.matrix-rtc.validations missing context" .context -}}
 {{ $messages := list }}
-{{- if not .ingress.host -}}
-{{ $messages = append $messages "matrixRTC.ingress.host is required when matrixRTC.enabled=true" }}
+{{- $hasHost := false -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $hasHost = true -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $hasHost = true -}}
+{{- end -}}
+{{- if and (or .gateway.enabled .ingress.enabled) (not $hasHost) -}}
+{{ $messages = append $messages "matrixRTC.gateway.host (when matrixRTC.gateway.enabled=true) or matrixRTC.ingress.host (when matrixRTC.ingress.enabled=true) is required when matrixRTC.enabled=true" }}
 {{- end }}
 {{- if and .sfu.exposedServices.turnTLS.enabled (not .sfu.exposedServices.turnTLS.tlsSecret) (not $root.Values.certManager) -}}
 {{ $messages = append $messages "matrixRTC.sfu.exposedServices.turnTLS.enabled requires matrixRTC.sfu.exposedServices.turnTLS.tlsSecret set or certManager enabled" }}
@@ -74,8 +80,14 @@ env:
         )) }}
 {{- end }}
 {{- if .sfu.enabled }}
+{{- $rtcHost := "" -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $rtcHost = (tpl .gateway.host $root) -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $rtcHost = (tpl .ingress.host $root) -}}
+{{- end }}
 - name: "LIVEKIT_URL"
-  value: {{ printf "wss://%s" (tpl .ingress.host $root) }}
+  value: {{ printf "wss://%s" $rtcHost }}
 {{- end }}
 - name: "LIVEKIT_FULL_ACCESS_HOMESERVERS"
 {{- if $root.Values.serverName }}
@@ -131,5 +143,40 @@ env:
     {{- end -}}
   {{- end -}}
 {{- end -}}
+{{- end -}}
+{{- end -}}
+{{- define "element-io.matrix-rtc-authorisation-service.ports" -}}
+{{- /*
+  Port mappings for matrix-rtc-authorisation-service.
+  Returns the numeric port value for the named port.
+  
+  Parameters:
+    .portName: name of the port (e.g., "http")
+  
+  Returns: numeric port value
+  
+  Example: {{ include "element-io.matrix-rtc-authorisation-service.ports" (dict "portName" "http") }}
+*/}}
+{{- $portName := .portName -}}
+{{- if eq $portName "http" }}8080{{- else -}}
+{{- fail (printf "Port '%s' not found for service 'matrix-rtc-authorisation-service'" $portName) -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "element-io.matrix-rtc-sfu.ports" -}}
+{{- /*
+  Port mappings for matrix-rtc-sfu service.
+  Returns the numeric port value for the named port.
+  
+  Parameters:
+    .portName: name of the port (e.g., "http")
+  
+  Returns: numeric port value
+  
+  Example: {{ include "element-io.matrix-rtc-sfu.ports" (dict "portName" "http") }}
+*/}}
+{{- $portName := .portName -}}
+{{- if eq $portName "http" }}7880{{- else -}}
+{{- fail (printf "Port '%s' not found for service 'matrix-rtc-sfu'" $portName) -}}
 {{- end -}}
 {{- end -}}

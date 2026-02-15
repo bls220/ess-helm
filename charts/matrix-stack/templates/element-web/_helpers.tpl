@@ -9,8 +9,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $root := .root -}}
 {{- with required "element-io.element-web.validations missing context" .context -}}
 {{ $messages := list }}
-{{- if not .ingress.host -}}
-{{ $messages = append $messages "elementWeb.ingress.host is required when elementWeb.enabled=true" }}
+{{- $hasHost := false -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $hasHost = true -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $hasHost = true -}}
+{{- end -}}
+{{- if and (or .gateway.enabled .ingress.enabled) (not $hasHost) -}}
+{{ $messages = append $messages "elementWeb.gateway.host (when elementWeb.gateway.enabled=true) or elementWeb.ingress.host (when elementWeb.ingress.enabled=true) is required when elementWeb.enabled=true" }}
 {{- end }}
 {{ $messages | toJson }}
 {{- end }}
@@ -64,3 +70,20 @@ config.json: |
 {{- (tpl ($root.Files.Get "configs/element-web/config.json.tpl") (dict "root" $root "context" .)) | nindent 2 }}
 {{- end }}
 {{- end }}
+{{- define "element-io.element-web.ports" -}}
+{{- /*
+  Port mappings for element-web service.
+  Returns the numeric port value for the named port.
+  
+  Parameters:
+    .portName: name of the port (e.g., "web")
+  
+  Returns: numeric port value
+  
+  Example: {{ include "element-io.element-web.ports" (dict "portName" "web") }}
+*/}}
+{{- $portName := .portName -}}
+{{- if eq $portName "web" }}80{{- else -}}
+{{- fail (printf "Port '%s' not found for service 'element-web'" $portName) -}}
+{{- end -}}
+{{- end -}}

@@ -28,6 +28,8 @@ certManager: {}
 # serverName: ess.localhost
 {{ labels(global=true) }}
 {{ ingress(global=true) }}
+{{ gateway(global=true) }}
+
 
 ## Common image properties that are applied as defaults to all components.
 image:
@@ -163,6 +165,8 @@ networking:
 ## How this ingress should be constructed
 {%- endif %}
 {{ key }}:
+  ## Whether to enable Ingress resources for {{ 'all components' if global else 'this component' }}
+  enabled: true
 {%- if not global %}
   ## What hostname should be used for this Ingress
   # host:
@@ -202,6 +206,55 @@ networking:
   ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
   ## This can be set to `ingress-nginx`.
   # controllerType:
+{%- endmacro %}
+
+{% macro gateway(global=false, key='gateway') %}
+{%- if global %}
+## How all HTTPRoutes for Gateway API should be constructed by default, unless overridden
+{%- else %}
+## How this HTTPRoute for Gateway API should be constructed
+{%- endif %}
+{{ key }}:
+  ## Whether to enable HTTPRoute resources for {{ 'all components' if global else 'this component' }}
+  enabled: false
+{%- if not global %}
+  ## What hostname should be used for this HTTPRoute
+  # host:
+{% endif %}
+  ## Annotations to be added to {{ 'all HTTPRoutes. Will be merged with component specific HTTPRoute annotations' if global else 'this HTTPRoute' }}
+  annotations: {}
+
+  ## ParentReferences for attaching HTTPRoute to Gateway(s)
+  ## Configuration follows Kubernetes Gateway API ParentReference spec
+  ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+  # parentRefs:
+  #   - name: "my-gateway"           # (required) Name of the Gateway resource
+  #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+  #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+  #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+  #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+  #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+  ## How the {{ 'Services' if global else 'Service' }} behind {{ 'all HTTPRoutes' if global else 'this HTTPRoute' }} is constructed{{ ' by default' if global else '' }}
+{%- if global %}
+  service:
+    type: ClusterIP
+    ## Annotations to be added to {{ 'all HTTPRoutes services. Will be merged with component specific HTTPRoute services annotations' if global else 'this HTTPRoute' }}
+    annotations: {}
+    # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+{%- else %}
+  # service:
+  #   type: ClusterIP
+  #   annotations: {}
+  #   # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+  #   externalTrafficPolicy: Cluster
+  #   internalTrafficPolicy: Cluster
+  #   # External IPs addresses of this service.
+  #   externalIPs: []
+  service: {}
+{%- endif %}
 {%- endmacro %}
 
 {% macro labels(global=false, key='labels') %}

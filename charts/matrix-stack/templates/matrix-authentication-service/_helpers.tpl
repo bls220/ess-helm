@@ -9,8 +9,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $root := .root -}}
 {{- with required "element-io.matrix-authentication-service.validations missing context" .context -}}
 {{ $messages := list }}
-{{- if not .ingress.host -}}
-{{ $messages = append $messages "matrixAuthenticationService.ingress.host is required when matrixAuthenticationService.enabled=true" }}
+{{- $hasHost := false -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $hasHost = true -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $hasHost = true -}}
+{{- end -}}
+{{- if and (or .gateway.enabled .ingress.enabled) (not $hasHost) -}}
+{{ $messages = append $messages "matrixAuthenticationService.gateway.host (when matrixAuthenticationService.gateway.enabled=true) or matrixAuthenticationService.ingress.host (when matrixAuthenticationService.ingress.enabled=true) is required when matrixAuthenticationService.enabled=true" }}
 {{- end }}
 {{- if and (not $root.Values.postgres.enabled) (not .postgres) -}}
 {{ $messages = append $messages "matrixAuthenticationService.postgres is required when matrixAuthenticationService.enabled=true but postgres.enabled=false" }}
@@ -290,5 +296,22 @@ true
 env:
 - name: "NAMESPACE"
   value: {{ $root.Release.Namespace | quote }}
+{{- end -}}
+{{- end -}}
+{{- define "element-io.matrix-authentication-service.ports" -}}
+{{- /*
+  Port mappings for matrix-authentication-service.
+  Returns the numeric port value for the named port.
+  
+  Parameters:
+    .portName: name of the port (e.g., "http")
+  
+  Returns: numeric port value
+  
+  Example: {{ include "element-io.matrix-authentication-service.ports" (dict "portName" "http") }}
+*/}}
+{{- $portName := .portName -}}
+{{- if eq $portName "http" }}8080{{- else -}}
+{{- fail (printf "Port '%s' not found for service 'matrix-authentication-service'" $portName) -}}
 {{- end -}}
 {{- end -}}

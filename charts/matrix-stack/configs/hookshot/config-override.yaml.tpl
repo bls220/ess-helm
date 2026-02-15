@@ -7,6 +7,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $root := .root }}
 {{- with required "hookshot/config-overrides.yaml.tpl missing context" .context }}
 {{- $context := . -}}
+{{- $hookshotHasHost := false -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $hookshotHasHost = true -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $hookshotHasHost = true -}}
+{{- end -}}
 bridge:
   domain: "{{ tpl $root.Values.serverName $root }}"
 {{- if $root.Values.synapse.enabled }}
@@ -45,7 +51,7 @@ listeners:
     bindAddress: 0.0.0.0
     resources:
       - webhooks
-{{- if and $root.Values.synapse.enabled (not .ingress.host) }}
+{{- if and $root.Values.synapse.enabled (not $hookshotHasHost) }}
     prefix: "/_matrix/hookshot"
 {{- end }}
   - port: 7777
@@ -56,22 +62,34 @@ listeners:
     bindAddress: 0.0.0.0
     resources:
       - widgets
-{{- if and $root.Values.synapse.enabled (not .ingress.host) }}
+{{- if and $root.Values.synapse.enabled (not $hookshotHasHost) }}
     prefix: "/_matrix/hookshot"
 {{- end }}
 
 generic:
-{{ if .ingress.host }}
-  urlPrefix: https://{{ (tpl .ingress.host $root) }}/webhook
+{{- $hookshotHost := "" -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $hookshotHost = (tpl .gateway.host $root) -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $hookshotHost = (tpl .ingress.host $root) -}}
+{{- end }}
+{{- $synapseHost := "" -}}
+{{- if and $root.Values.synapse.gateway.enabled $root.Values.synapse.gateway.host -}}
+{{- $synapseHost = (tpl $root.Values.synapse.gateway.host $root) -}}
+{{- else if and $root.Values.synapse.ingress.enabled $root.Values.synapse.ingress.host -}}
+{{- $synapseHost = (tpl $root.Values.synapse.ingress.host $root) -}}
+{{- end }}
+{{ if $hookshotHost }}
+  urlPrefix: https://{{ $hookshotHost }}/webhook
 {{ else if $root.Values.synapse.enabled }}
-  urlPrefix: https://{{ (tpl $root.Values.synapse.ingress.host $root) }}/_matrix/hookshot/webhook
+  urlPrefix: https://{{ $synapseHost }}/_matrix/hookshot/webhook
 {{ end }}
 
 widgets:
-{{- if .ingress.host }}
-  publicUrl: https://{{ tpl .ingress.host $root }}/widgetapi/v1/static
+{{- if $hookshotHost }}
+  publicUrl: https://{{ $hookshotHost }}/widgetapi/v1/static
 {{ else if $root.Values.synapse.enabled }}
-  publicUrl: https://{{ tpl $root.Values.synapse.ingress.host $root }}/_matrix/hookshot/widgetapi/v1/static
+  publicUrl: https://{{ $synapseHost }}/_matrix/hookshot/widgetapi/v1/static
 {{ end }}
 
 {{- end -}}

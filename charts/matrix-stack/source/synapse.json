@@ -133,6 +133,9 @@
     "ingress": {
       "$ref": "file://synapse/ingress_with_additional_paths.json"
     },
+    "gateway": {
+      "$ref": "file://synapse/gateway_with_additional_paths.json"
+    },
     "image": {
       "$ref": "file://common/image.json"
     },

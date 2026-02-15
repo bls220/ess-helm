@@ -9,8 +9,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $root := .root -}}
 {{- with required "element-io.element-admin.validations missing context" .context -}}
 {{ $messages := list }}
-{{- if not .ingress.host -}}
-{{ $messages = append $messages "elementAdmin.ingress.host is required when elementAdmin.enabled=true" }}
+{{- $hasHost := false -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $hasHost = true -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $hasHost = true -}}
+{{- end -}}
+{{- if and (or .gateway.enabled .ingress.enabled) (not $hasHost) -}}
+{{ $messages = append $messages "elementAdmin.gateway.host (when elementAdmin.gateway.enabled=true) or elementAdmin.ingress.host (when elementAdmin.ingress.enabled=true) is required when elementAdmin.enabled=true" }}
 {{- end }}
 {{ $messages | toJson }}
 {{- end }}
@@ -51,5 +57,22 @@ env:
 {{- else -}}
 env: []
 {{- end -}}
+{{- end -}}
+{{- end -}}
+{{- define "element-io.element-admin.ports" -}}
+{{- /*
+  Port mappings for element-admin service.
+  Returns the numeric port value for the named port.
+  
+  Parameters:
+    .portName: name of the port (e.g., "http")
+  
+  Returns: numeric port value
+  
+  Example: {{ include "element-io.element-admin.ports" (dict "portName" "http") }}
+*/}}
+{{- $portName := .portName -}}
+{{- if eq $portName "http" }}8080{{- else -}}
+{{- fail (printf "Port '%s' not found for service 'element-admin'" $portName) -}}
 {{- end -}}
 {{- end -}}

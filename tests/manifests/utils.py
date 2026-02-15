@@ -323,6 +323,12 @@ def iterate_deployables_ingress_parts(
     iterate_deployables_parts(visitor, lambda deployable_details: deployable_details.has_ingress)
 
 
+def iterate_deployables_gateway_parts(
+    visitor: Callable[[DeployableDetails], None],
+):
+    iterate_deployables_parts(visitor, lambda deployable_details: deployable_details.has_gateway)
+
+
 def template_to_deployable_details(template: dict[str, Any], container_name: str | None = None) -> DeployableDetails:
     # As per test_labels this doesn't have the release_name prefixed to it
     manifest_name: str = template["metadata"]["labels"]["app.kubernetes.io/name"]

@@ -1,7 +1,3 @@
-# Copyright 2024-2025 New Vector Ltd
-# Copyright 2025-2026 Element Creations Ltd
-#
-# SPDX-License-Identifier: AGPL-3.0-only
 
 # This file is generated. Do not edit directly. Edit source/values.yaml.j2 instead to make changes
 
@@ -53,6 +49,8 @@ labels: {}
 
 ## How all ingresses should be constructed by default, unless overridden
 ingress:
+  ## Whether to enable Ingress resources for all components
+  enabled: true
   ## Annotations to be added to all Ingresses. Will be merged with component specific Ingress annotations
   annotations: {}
 
@@ -76,6 +74,34 @@ ingress:
   ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
   ## This can be set to `ingress-nginx`.
   # controllerType:
+
+## How all HTTPRoutes for Gateway API should be constructed by default, unless overridden
+gateway:
+  ## Whether to enable HTTPRoute resources for all components
+  enabled: false
+  ## Annotations to be added to all HTTPRoutes. Will be merged with component specific HTTPRoute annotations
+  annotations: {}
+
+  ## ParentReferences for attaching HTTPRoute to Gateway(s)
+  ## Configuration follows Kubernetes Gateway API ParentReference spec
+  ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+  # parentRefs:
+  #   - name: "my-gateway"           # (required) Name of the Gateway resource
+  #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+  #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+  #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+  #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+  #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+  ## How the Services behind all HTTPRoutes is constructed by default
+  service:
+    type: ClusterIP
+    ## Annotations to be added to all HTTPRoutes services. Will be merged with component specific HTTPRoute services annotations
+    annotations: {}
+    # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+
 
 ## Common image properties that are applied as defaults to all components.
 image:
@@ -475,6 +501,8 @@ matrixRTC:
   replicas: 1
   ## How this ingress should be constructed
   ingress:
+    ## Whether to enable Ingress resources for this component
+    enabled: true
     ## What hostname should be used for this Ingress
     # host:
 
@@ -503,6 +531,37 @@ matrixRTC:
     ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
     ## This can be set to `ingress-nginx`.
     # controllerType:
+  ## How this HTTPRoute for Gateway API should be constructed
+  gateway:
+    ## Whether to enable HTTPRoute resources for this component
+    enabled: false
+    ## What hostname should be used for this HTTPRoute
+    # host:
+
+    ## Annotations to be added to this HTTPRoute
+    annotations: {}
+
+    ## ParentReferences for attaching HTTPRoute to Gateway(s)
+    ## Configuration follows Kubernetes Gateway API ParentReference spec
+    ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+    # parentRefs:
+    #   - name: "my-gateway"           # (required) Name of the Gateway resource
+    #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+    #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+    #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+    #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+    #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+    ## How the Service behind this HTTPRoute is constructed
+    # service:
+    #   type: ClusterIP
+    #   annotations: {}
+    #   # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    #   externalTrafficPolicy: Cluster
+    #   internalTrafficPolicy: Cluster
+    #   # External IPs addresses of this service.
+    #   externalIPs: []
+    service: {}
   # Details of the image to be used
   image:
     ## The host and (optional) port of the container image registry for this component.
@@ -1138,6 +1197,8 @@ elementAdmin:
     pullSecrets: []
   ## How this ingress should be constructed
   ingress:
+    ## Whether to enable Ingress resources for this component
+    enabled: true
     ## What hostname should be used for this Ingress
     # host:
 
@@ -1166,6 +1227,37 @@ elementAdmin:
     ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
     ## This can be set to `ingress-nginx`.
     # controllerType:
+  ## How this HTTPRoute for Gateway API should be constructed
+  gateway:
+    ## Whether to enable HTTPRoute resources for this component
+    enabled: false
+    ## What hostname should be used for this HTTPRoute
+    # host:
+
+    ## Annotations to be added to this HTTPRoute
+    annotations: {}
+
+    ## ParentReferences for attaching HTTPRoute to Gateway(s)
+    ## Configuration follows Kubernetes Gateway API ParentReference spec
+    ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+    # parentRefs:
+    #   - name: "my-gateway"           # (required) Name of the Gateway resource
+    #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+    #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+    #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+    #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+    #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+    ## How the Service behind this HTTPRoute is constructed
+    # service:
+    #   type: ClusterIP
+    #   annotations: {}
+    #   # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    #   externalTrafficPolicy: Cluster
+    #   internalTrafficPolicy: Cluster
+    #   # External IPs addresses of this service.
+    #   externalIPs: []
+    service: {}
   ## Labels to add to all manifest for this component
   labels: {}
   ## Defines the annotations to add to the workload
@@ -1400,6 +1492,8 @@ elementWeb:
     pullSecrets: []
   ## How this ingress should be constructed
   ingress:
+    ## Whether to enable Ingress resources for this component
+    enabled: true
     ## What hostname should be used for this Ingress
     # host:
 
@@ -1428,6 +1522,37 @@ elementWeb:
     ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
     ## This can be set to `ingress-nginx`.
     # controllerType:
+  ## How this HTTPRoute for Gateway API should be constructed
+  gateway:
+    ## Whether to enable HTTPRoute resources for this component
+    enabled: false
+    ## What hostname should be used for this HTTPRoute
+    # host:
+
+    ## Annotations to be added to this HTTPRoute
+    annotations: {}
+
+    ## ParentReferences for attaching HTTPRoute to Gateway(s)
+    ## Configuration follows Kubernetes Gateway API ParentReference spec
+    ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+    # parentRefs:
+    #   - name: "my-gateway"           # (required) Name of the Gateway resource
+    #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+    #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+    #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+    #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+    #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+    ## How the Service behind this HTTPRoute is constructed
+    # service:
+    #   type: ClusterIP
+    #   annotations: {}
+    #   # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    #   externalTrafficPolicy: Cluster
+    #   internalTrafficPolicy: Cluster
+    #   # External IPs addresses of this service.
+    #   externalIPs: []
+    service: {}
   ## Labels to add to all manifest for this component
   labels: {}
   ## Defines the annotations to add to the workload
@@ -1917,6 +2042,8 @@ hookshot:
 
   ## How this ingress should be constructed
   ingress:
+    ## Whether to enable Ingress resources for this component
+    enabled: true
     ## What hostname should be used for this Ingress
     # host:
 
@@ -1945,6 +2072,38 @@ hookshot:
     ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
     ## This can be set to `ingress-nginx`.
     # controllerType:
+
+  ## How this HTTPRoute for Gateway API should be constructed
+  gateway:
+    ## Whether to enable HTTPRoute resources for this component
+    enabled: false
+    ## What hostname should be used for this HTTPRoute
+    # host:
+
+    ## Annotations to be added to this HTTPRoute
+    annotations: {}
+
+    ## ParentReferences for attaching HTTPRoute to Gateway(s)
+    ## Configuration follows Kubernetes Gateway API ParentReference spec
+    ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+    # parentRefs:
+    #   - name: "my-gateway"           # (required) Name of the Gateway resource
+    #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+    #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+    #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+    #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+    #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+    ## How the Service behind this HTTPRoute is constructed
+    # service:
+    #   type: ClusterIP
+    #   annotations: {}
+    #   # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    #   externalTrafficPolicy: Cluster
+    #   internalTrafficPolicy: Cluster
+    #   # External IPs addresses of this service.
+    #   externalIPs: []
+    service: {}
 
   ## Additional configuration to provide to Hookshot.
   ## You can, if you whish, override it in the additional config.
@@ -2367,6 +2526,8 @@ matrixAuthenticationService:
 
   ## How this ingress should be constructed
   ingress:
+    ## Whether to enable Ingress resources for this component
+    enabled: true
     ## What hostname should be used for this Ingress
     # host:
 
@@ -2395,6 +2556,38 @@ matrixAuthenticationService:
     ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
     ## This can be set to `ingress-nginx`.
     # controllerType:
+
+  ## How this HTTPRoute for Gateway API should be constructed
+  gateway:
+    ## Whether to enable HTTPRoute resources for this component
+    enabled: false
+    ## What hostname should be used for this HTTPRoute
+    # host:
+
+    ## Annotations to be added to this HTTPRoute
+    annotations: {}
+
+    ## ParentReferences for attaching HTTPRoute to Gateway(s)
+    ## Configuration follows Kubernetes Gateway API ParentReference spec
+    ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+    # parentRefs:
+    #   - name: "my-gateway"           # (required) Name of the Gateway resource
+    #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+    #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+    #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+    #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+    #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+    ## How the Service behind this HTTPRoute is constructed
+    # service:
+    #   type: ClusterIP
+    #   annotations: {}
+    #   # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    #   externalTrafficPolicy: Cluster
+    #   internalTrafficPolicy: Cluster
+    #   # External IPs addresses of this service.
+    #   externalIPs: []
+    service: {}
 
   ## Kubernetes resources to allocate to each instance.
   resources:
@@ -4885,6 +5078,8 @@ synapse:
 
   ## How this ingress should be constructed
   ingress:
+    ## Whether to enable Ingress resources for this component
+    enabled: true
     ## What hostname should be used for this Ingress
     # host:
 
@@ -4913,6 +5108,37 @@ synapse:
     ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
     ## This can be set to `ingress-nginx`.
     # controllerType:
+  ## How this HTTPRoute for Gateway API should be constructed
+  gateway:
+    ## Whether to enable HTTPRoute resources for this component
+    enabled: false
+    ## What hostname should be used for this HTTPRoute
+    # host:
+
+    ## Annotations to be added to this HTTPRoute
+    annotations: {}
+
+    ## ParentReferences for attaching HTTPRoute to Gateway(s)
+    ## Configuration follows Kubernetes Gateway API ParentReference spec
+    ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+    # parentRefs:
+    #   - name: "my-gateway"           # (required) Name of the Gateway resource
+    #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+    #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+    #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+    #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+    #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+    ## How the Service behind this HTTPRoute is constructed
+    # service:
+    #   type: ClusterIP
+    #   annotations: {}
+    #   # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    #   externalTrafficPolicy: Cluster
+    #   internalTrafficPolicy: Cluster
+    #   # External IPs addresses of this service.
+    #   externalIPs: []
+    service: {}
   ## Labels to add to all manifest for this component
   labels: {}
   ## Defines the annotations to add to the workload
@@ -5124,6 +5350,8 @@ wellKnownDelegation:
 
   ## How this ingress should be constructed
   ingress:
+    ## Whether to enable Ingress resources for this component
+    enabled: true
     ## What hostname should be used for this Ingress
     # host:
 
@@ -5152,6 +5380,38 @@ wellKnownDelegation:
     ## If set, some tweaks will be applied automatically to ingresses based on the controller type here.
     ## This can be set to `ingress-nginx`.
     # controllerType:
+
+  ## How this HTTPRoute for Gateway API should be constructed
+  gateway:
+    ## Whether to enable HTTPRoute resources for this component
+    enabled: false
+    ## What hostname should be used for this HTTPRoute
+    # host:
+
+    ## Annotations to be added to this HTTPRoute
+    annotations: {}
+
+    ## ParentReferences for attaching HTTPRoute to Gateway(s)
+    ## Configuration follows Kubernetes Gateway API ParentReference spec
+    ## https://gateway-api.sigs.k8s.io/reference/spec/#parentreference
+    # parentRefs:
+    #   - name: "my-gateway"           # (required) Name of the Gateway resource
+    #     namespace: "gateway-system"  # (optional) Namespace of the Gateway resource
+    #     group: gateway.networking.k8s.io  # (optional) Group of the Gateway API resource (default: gateway.networking.k8s.io)
+    #     kind: Gateway                # (optional) Kind of the Gateway API resource (default: Gateway)
+    #     sectionName: "https"         # (optional) Name of the Listener on the Gateway that this route would attach to
+    #     port: 443                    # (optional) Port number of the Listener on the Gateway that this route would attach to
+
+    ## How the Service behind this HTTPRoute is constructed
+    # service:
+    #   type: ClusterIP
+    #   annotations: {}
+    #   # External traffic policy will be configured on services of type `NodePort` and `LoadBalancer`
+    #   externalTrafficPolicy: Cluster
+    #   internalTrafficPolicy: Cluster
+    #   # External IPs addresses of this service.
+    #   externalIPs: []
+    service: {}
 
   ## If ElementWeb is deployed, the base domain will redirect to it's ingress host by default
   ## If ElementWeb is not deployed or this is disabled, no base domain URL redirect will be set.

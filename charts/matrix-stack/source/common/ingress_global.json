@@ -1,6 +1,9 @@
 {
   "type": "object",
   "properties": {
+    "enabled": {
+      "type": "boolean"
+    },
     "annotations": {
       "type": "object",
       "additionalProperties": {

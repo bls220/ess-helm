@@ -11,9 +11,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- if not $root.Values.serverName -}}
 {{ $messages = append $messages "serverName is required when hookshot.enabled=true" }}
 {{- end }}
-{{- if and (not $root.Values.synapse.enabled) (not .ingress.host) -}}
-{{ $messages = append $messages "hookshot.ingress.host is required when hookshot.enabled=true and synapse.enabled=false" }}
-{{- end }}
+{{- if and (not $root.Values.synapse.enabled) (or .gateway.enabled .ingress.enabled) -}}
+{{- $hasHost := false -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $hasHost = true -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $hasHost = true -}}
+{{- end -}}
+{{- if not $hasHost -}}
+{{ $messages = append $messages "hookshot.gateway.host (when hookshot.gateway.enabled=true) or hookshot.ingress.host (when hookshot.ingress.enabled=true) is required when hookshot.enabled=true and synapse.enabled=false" }}
+{{- end -}}
+{{- end -}}
 {{- if and ($root.Values.matrixAuthenticationService.enabled) (.enableEncryption) -}}
 {{ $messages = append $messages "hookshot.enableEncryption cannot be enabled when matrixAuthenticationService.enabled=true" }}
 {{- end }}
@@ -136,3 +144,24 @@ user-{{ $key }}: {{ (tpl $prop.config $root) | b64enc }}
 {{ $root.Release.Name }}-hookshot
 {{- end -}}
 {{- end }}
+
+{{- define "element-io.hookshot.ports" -}}
+{{- /*
+  Port mappings for hookshot service.
+  Returns the numeric port value for the named port.
+  
+  Parameters:
+    .portName: name of the port (e.g., "webhooks" or "widgets")
+  
+  Returns: numeric port value
+  
+  Example: {{ include "element-io.hookshot.ports" (dict "portName" "webhooks") }}
+*/}}
+{{- $portName := .portName -}}
+{{- if eq $portName "webhooks" }}7775
+{{- else if eq $portName "widgets" }}7778
+{{- else -}}
+{{- fail (printf "Port '%s' not found for service 'hookshot'" $portName) -}}
+{{- end -}}
+{{- end -}}
+

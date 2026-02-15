@@ -8,7 +8,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $root := .root -}}
 {{- with required "synapse/synapse-04-homeserver-overrides.yaml.tpl missing context" .context }}
 {{- $isHook := required "element-io.synapse.config.shared-overrides requires context.isHook" .isHook -}}
-public_baseurl: https://{{ tpl .ingress.host $root }}/
+{{- $synapseHost := "" -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $synapseHost = (tpl .gateway.host $root) -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $synapseHost = (tpl .ingress.host $root) -}}
+{{- end -}}
+public_baseurl: https://{{ $synapseHost }}/
 server_name: {{ tpl $root.Values.serverName $root }}
 signing_key_path: /secrets/{{
   include "element-io.ess-library.init-secret-path" (
@@ -133,11 +139,17 @@ password_config:
 {{- end }}
 {{- end }}
 {{- if $root.Values.matrixRTC.enabled }}
+{{- $rtcHost := "" -}}
+{{- if and $root.Values.matrixRTC.gateway.enabled $root.Values.matrixRTC.gateway.host -}}
+{{- $rtcHost = (tpl $root.Values.matrixRTC.gateway.host $root) -}}
+{{- else if and $root.Values.matrixRTC.ingress.enabled $root.Values.matrixRTC.ingress.host -}}
+{{- $rtcHost = (tpl $root.Values.matrixRTC.ingress.host $root) -}}
+{{- end }}
 
 matrix_rtc:
   transports:
   - type: livekit
-    livekit_service_url: {{ (printf "https://%s" $root.Values.matrixRTC.ingress.host) }}
+    livekit_service_url: {{ (printf "https://%s" $rtcHost) }}
 {{- end }}
 
 {{- if dig "appservice" "enabled" false .workers }}

@@ -8,8 +8,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- $root := .root }}
 {{- with required "matrix-authentication-service/config.yaml.tpl missing context" .context }}
 {{- $context := . -}}
+{{- $masHost := "" -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $masHost = (tpl .gateway.host $root) -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $masHost = (tpl .ingress.host $root) -}}
+{{- end -}}
 http:
-  public_base: "https://{{ tpl .ingress.host $root }}"
+  public_base: "https://{{ $masHost }}"
   listeners:
   - name: web
     binds:

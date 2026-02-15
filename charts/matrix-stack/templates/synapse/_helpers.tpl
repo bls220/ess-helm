@@ -9,8 +9,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{ $root := .root }}
 {{- with required "element-io.synapse.validations missing context" .context -}}
 {{ $messages := list }}
-{{- if not .ingress.host -}}
-{{ $messages = append $messages "synapse.ingress.host is required when synapse.enabled=true" }}
+{{- $hasHost := false -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $hasHost = true -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $hasHost = true -}}
+{{- end -}}
+{{- if and (or .gateway.enabled .ingress.enabled) (not $hasHost) -}}
+{{ $messages = append $messages "synapse.gateway.host (when synapse.gateway.enabled=true) or synapse.ingress.host (when synapse.ingress.enabled=true) is required when synapse.enabled=true" }}
 {{- end }}
 {{- if not $root.Values.serverName -}}
 {{ $messages = append $messages "serverName is required when synapse.enabled=true" }}
@@ -296,3 +302,24 @@ ess-version.json: |
 .{{ $root.Release.Namespace }}.svc.{{ $root.Values.clusterDomain }}:8008
 {{- end -}}
 {{- end -}}
+
+{{- define "element-io.synapse.ports" -}}
+{{- /*
+  Port mappings for synapse service.
+  Returns the numeric port value for the named port.
+  
+  Parameters:
+    .portName: name of the port (e.g., "haproxy-synapse" or "haproxy-403")
+  
+  Returns: numeric port value
+  
+  Example: {{ include "element-io.synapse.ports" (dict "portName" "haproxy-synapse") }}
+*/}}
+{{- $portName := .portName -}}
+{{- if eq $portName "haproxy-synapse" }}8008
+{{- else if eq $portName "haproxy-403" }}8009
+{{- else -}}
+{{- fail (printf "Port '%s' not found for service 'synapse'" $portName) -}}
+{{- end -}}
+{{- end -}}
+

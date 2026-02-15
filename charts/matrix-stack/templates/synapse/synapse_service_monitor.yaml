@@ -9,6 +9,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 {{- if .enabled -}}
 {{- if $.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/ServiceMonitor" }}
 {{- if .serviceMonitors.enabled }}
+{{- $synapseHost := "" -}}
+{{- if and .gateway.enabled .gateway.host -}}
+{{- $synapseHost = (tpl .gateway.host $) -}}
+{{- else if and .ingress.enabled .ingress.host -}}
+{{- $synapseHost = (tpl .ingress.host $) -}}
+{{- end }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -23,7 +29,7 @@ spec:
     relabelings:
     - targetLabel: instance
       action: replace
-      replacement: {{ tpl .ingress.host $ }}
+      replacement: {{ $synapseHost }}
   selector:
     matchLabels:
       app.kubernetes.io/part-of: matrix-stack
